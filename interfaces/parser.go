@@ -190,7 +190,7 @@ func addPlayers(game *Game, selection *goquery.Selection) {
 }
 
 func ParseGames(doc *goquery.Document) (games []*Game) {
-	rawGames := doc.Find("table.contentpaneopen").Eq(2).Find("tbody > tr")
+	rawGames := doc.Find("div#Content > table.contentpaneopen:nth-child(6) > tbody > tr")
 	hasImages := hasImages(rawGames)
 	homeTeam, guestTeam := parseTeams(doc)
 	matchDate := parseMatchDate(doc)
