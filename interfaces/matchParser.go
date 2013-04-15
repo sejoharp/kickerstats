@@ -2,7 +2,6 @@ package interfaces
 
 import (
 	//"bitbucket.org/joscha/hpfeed/helper"
-	"fmt"
 	"github.com/puerkitobio/goquery"
 	"strings"
 )
@@ -24,6 +23,18 @@ func FindMatchLinks(doc *goquery.Document) (matchLinks []string) {
 
 func FindLigaLinks(doc *goquery.Document) (ligaLinks []string) {
 	rawLigaLinks := doc.Find("div#Content > table > tbody > tr > td > a.readon")
-	fmt.Print(rawLigaLinks.Text())
+	rawLigaLinks.Each(func(i int, selection *goquery.Selection) {
+		link, _ := selection.Attr("href")
+		ligaLinks = append(ligaLinks, "http://www.kickern-hamburg.de"+strings.TrimSpace(link))
+	})
+	return
+}
+
+func FindSeasons(doc *goquery.Document) (seasonIds []string) {
+	rawSeasonIds := doc.Find("div#Content select option")
+	rawSeasonIds.Each(func(i int, selection *goquery.Selection) {
+		seasonId, _ := selection.Attr("value")
+		seasonIds = append(seasonIds, seasonId)
+	})
 	return
 }

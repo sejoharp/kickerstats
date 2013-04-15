@@ -2,7 +2,6 @@ package interfaces
 
 import (
 	"bitbucket.org/joscha/hpfeed/helper"
-	"fmt"
 	"github.com/puerkitobio/goquery"
 	"strconv"
 	"strings"
@@ -12,12 +11,12 @@ import (
 func ParseGames(doc *goquery.Document) (games []*Game) {
 	rawGames := doc.Find("div#Content > table.contentpaneopen:nth-child(6) > tbody")
 	rawGames = rawGames.Find(".sectiontableentry1, .sectiontableentry2")
-	hasImages := hasImages(rawGames)
-	homeTeam, guestTeam := parseTeams(doc)
-	matchDate := parseMatchDate(doc)
-	matchDay := parseMatchDay(doc)
-	rawGames.Each(func(i int, selection *goquery.Selection) {
-		if isValidGame(selection) {
+	if isValidGameList(rawGames) {
+		hasImages := hasImages(rawGames)
+		homeTeam, guestTeam := parseTeams(doc)
+		matchDate := parseMatchDate(doc)
+		matchDay := parseMatchDay(doc)
+		rawGames.Each(func(i int, selection *goquery.Selection) {
 			game := &Game{}
 			game.Double = isDouble(selection)
 			game.Position = parseGamePosition(selection)
@@ -34,14 +33,14 @@ func ParseGames(doc *goquery.Document) (games []*Game) {
 				game.HomeScore, game.GuestScore = parseScores(scoreString)
 			}
 			games = append(games, game)
-		}
-	})
+		})
+	}
 	return
 }
 
-func isValidGame(selection *goquery.Selection) bool {
-	tds := selection.Children().Length()
-	return tds == 6 || tds == 4
+func isValidGameList(selection *goquery.Selection) bool {
+	tdCount := selection.First().Children().Length()
+	return tdCount == 6 || tdCount == 4
 }
 
 func parseMatchDate(doc *goquery.Document) time.Time {
@@ -60,7 +59,6 @@ func parseMatchDay(doc *goquery.Document) int {
 }
 
 func parseTeams(doc *goquery.Document) (homeTeam string, guestTeam string) {
-	fmt.Print("")
 	teams := doc.Find("table.contentpaneopen").Eq(1).Find("tbody > tr > td > table > tbody h2")
 	homeTeam = teams.First().Text()
 	guestTeam = teams.Last().Text()

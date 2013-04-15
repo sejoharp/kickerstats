@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	//"fmt"
+	"strconv"
 	"testing"
 )
 
@@ -29,6 +29,36 @@ func TestFindMatchLinksCheckFirstLink(t *testing.T) {
 
 func TestFindLigaLinks(t *testing.T) {
 	doc := loadDoc("uebersicht.html")
+	expectedLinkCount := 5
 
-	FindLigaLinks(doc)
+	links := FindLigaLinks(doc)
+	linkCount := len(links)
+
+	if expectedLinkCount != linkCount {
+		t.Errorf("False amount of links. expected: %d, result: %d", expectedLinkCount, linkCount)
+	}
+}
+
+func TestFindSeasonsCount(t *testing.T) {
+	doc := loadDoc("uebersicht.html")
+	expectedseasonIdsCount := 5
+
+	seasonIds := FindSeasons(doc)
+	seasonIdsCount := len(seasonIds)
+
+	if expectedseasonIdsCount != seasonIdsCount {
+		t.Errorf("False amount of links. expected: %d, result: %d", expectedseasonIdsCount, seasonIdsCount)
+	}
+}
+
+func TestFindSeasonsFirstId(t *testing.T) {
+	doc := loadDoc("uebersicht.html")
+	expectedseasonId := 7
+
+	seasonIds := FindSeasons(doc)
+	seasonId, _ := strconv.Atoi(seasonIds[0])
+
+	if expectedseasonId != seasonId {
+		t.Errorf("False amount of links. expected: %d, result: %d", expectedseasonId, seasonId)
+	}
 }

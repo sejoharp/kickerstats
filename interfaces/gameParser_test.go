@@ -113,7 +113,7 @@ func TestParseGameAmount(t *testing.T) {
 	gameAmount := len(games)
 
 	if expectedGameAmount != gameAmount {
-		t.Errorf("Parsing home team failed. expected: %i, result: %i", expectedGameAmount, gameAmount)
+		t.Errorf("Parsing games failed. expected: %d, result: %d", expectedGameAmount, gameAmount)
 	}
 }
 
@@ -125,7 +125,7 @@ func TestParseGameAmountWithImages(t *testing.T) {
 	gameAmount := len(games)
 
 	if expectedGameAmount != gameAmount {
-		t.Errorf("Parsing home team failed. expected: %i, result: %i", expectedGameAmount, gameAmount)
+		t.Errorf("Parsing games failed. expected: %d, result: %d", expectedGameAmount, gameAmount)
 	}
 }
 
@@ -172,5 +172,17 @@ func TestParseFirstDoubleGameWithImages(t *testing.T) {
 	if expectedDoubleGame.Equal(games[2]) == false {
 		t.Errorf("Parsing first double game failed. expected: ", expectedDoubleGame)
 		t.Errorf("Parsing first double game failed.   result: ", games[2])
+	}
+}
+
+func TestParseGameAmountRelegation(t *testing.T) {
+	doc := loadDoc("relegation.html")
+	expectedGameAmount := 0
+
+	games := ParseGames(doc)
+	gameAmount := len(games)
+
+	if expectedGameAmount != gameAmount {
+		t.Errorf("Parsing games failed. expected: %d, result: %d", expectedGameAmount, gameAmount)
 	}
 }
