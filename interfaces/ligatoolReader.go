@@ -1,38 +1,27 @@
 package interfaces
 
-/*
-func GetData(client *http.Client) {
-	params := url.Values{"username": []string{this.forumUser}, "password": []string{this.forumPasswd}, "login": {"anmelden"}}
-	resp, err := client.PostForm("http://kickern-hamburg.de/phpBB2/login.php", params)
-	if err != nil {
-		fmt.Println(err)
-	}
-	resp.Body.Close()
-}
+import (
+	"bitbucket.org/joscha/hpfeed/helper"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+)
 
-func (this *ForumReader) getHTMLData(client *http.Client) []byte {
-	resp, err := client.Get("http://kickern-hamburg.de/phpBB2/viewforum.php?f=15")
-	if err != nil {
-		fmt.Println(err)
-	}
+func GetSeason(id string) []byte {
+	params := url.Values{"filter_saison_id": []string{id}, "task": []string{"veranstaltungen"}}
+	resp, err := http.PostForm("http://www.kickern-hamburg.de/liga-tool/mannschaftswettbewerbe", params)
+	helper.HandleFatalError("error getting season: ", err)
 	body, err := ioutil.ReadAll(resp.Body)
+	helper.HandleFatalError("error reading season data: ", err)
 	resp.Body.Close()
 	return body
 }
 
-
-resp, err := http.Get("http://example.com/")
-...
-resp, err := http.Post("http://example.com/upload", "image/jpeg", &buf)
-...
-resp, err := http.PostForm("http://example.com/form",
-	url.Values{"key": {"Value"}, "id": {"123"}})
-...
-resp, err := http.Get("http://example.com/")
-if err != nil {
-	// handle error
+func GetHTMLData(url string) []byte {
+	resp, err := http.Get(url)
+	helper.HandleFatalError("error getting html: ", err)
+	body, err := ioutil.ReadAll(resp.Body)
+	helper.HandleFatalError("error reading html data: ", err)
+	resp.Body.Close()
+	return body
 }
-defer resp.Body.Close()
-body, err := ioutil.ReadAll(resp.Body)
-// ...
-*/
