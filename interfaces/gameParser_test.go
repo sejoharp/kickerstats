@@ -27,7 +27,7 @@ func TestParseMatchDate(t *testing.T) {
 	doc := loadDoc("begegnung.html")
 	expectedMatchDate := time.Date(2013, 2, 27, 20, 0, 0, 0, time.Local)
 
-	resultDate := parseMatchDate(doc)
+	resultDate := parseMatchDate(doc, true)
 
 	if expectedMatchDate != resultDate {
 		t.Errorf("Parsing match date failed. expected: %s, result: %s", expectedMatchDate, resultDate)
@@ -37,7 +37,7 @@ func TestParseMatchDate(t *testing.T) {
 func TestParseMatchDay(t *testing.T) {
 	doc := loadDoc("begegnung.html")
 
-	resultDay := parseMatchDay(doc)
+	resultDay := parseMatchDay(doc, true)
 
 	if resultDay != 1 {
 		t.Errorf("Parsing match day failed. expected: %s, result: %s", 1, resultDay)
@@ -184,5 +184,51 @@ func TestParseGameAmountRelegation(t *testing.T) {
 
 	if expectedGameAmount != gameAmount {
 		t.Errorf("Parsing games failed. expected: %d, result: %d", expectedGameAmount, gameAmount)
+	}
+}
+
+func TestParseEmptyNames(t *testing.T) {
+	expectedGame := &Game{
+		HomeTeam:     "Die Hinkelsteinchen",
+		GuestTeam:    "Kurbelkraft Bergedorf",
+		HomePlayer1:  "",
+		GuestPlayer1: "",
+		HomeScore:    7,
+		GuestScore:   0,
+		Position:     14,
+		MatchDay:     1,
+		MatchDate:    time.Date(2013, 2, 28, 20, 0, 0, 0, time.Local),
+		Double:       false}
+	doc := loadDoc("begegnung_no_names.html")
+
+	games := ParseGames(doc)
+
+	if expectedGame.Equal(games[13]) == false {
+		t.Errorf("Parsing first game failed. expected: ", expectedGame)
+		t.Errorf("Parsing first game failed.   result: ", games[0])
+	}
+}
+
+func TestParseMatchDayNoDate(t *testing.T) {
+	doc := loadDoc("begegnung_no_date.html")
+
+	resultDay := parseMatchDay(doc, false)
+
+	if resultDay != 5 {
+		t.Errorf("Parsing match day failed. expected: %s, result: %s", 5, resultDay)
+	}
+}
+
+func TestParseMatchDateWithNoDate(t *testing.T) {
+	doc := loadDoc("begegnung_no_date.html")
+
+	matchDate := hasMatchDate(doc)
+	if matchDate {
+		t.Errorf("Parsing match date failed. expected: %t, result: %t", false, matchDate)
+	}
+	games := ParseGames(doc)
+
+	if games[0].MatchDate.String() != time.Date(0, 0, 0, 0, 0, 0, 0, time.Local).String() {
+		t.Errorf("Parsing first game failed. result: ", games[0].MatchDate.String())
 	}
 }

@@ -14,8 +14,10 @@ func ParseGames(doc *goquery.Document) (games []*Game) {
 	if isValidGameList(rawGames) {
 		hasImages := hasImages(rawGames)
 		homeTeam, guestTeam := parseTeams(doc)
-		matchDate := parseMatchDate(doc)
-		matchDay := parseMatchDay(doc)
+		var matchDate time.Time
+		hasMatchDate := hasMatchDate(doc)
+		matchDate = parseMatchDate(doc, hasMatchDate)
+		matchDay := parseMatchDay(doc, hasMatchDate)
 		rawGames.Each(func(i int, selection *goquery.Selection) {
 			game := &Game{}
 			game.Double = isDouble(selection)
@@ -43,16 +45,30 @@ func isValidGameList(selection *goquery.Selection) bool {
 	return tdCount == 6 || tdCount == 4
 }
 
-func parseMatchDate(doc *goquery.Document) time.Time {
+func hasMatchDate(doc *goquery.Document) bool {
 	rawData := doc.Find("#Content table tbody > tr > td").First().Text()
-	dateChunk := strings.Split(rawData, ",")[1]
+	dateChunks := strings.Split(rawData, ",")
+	return len(dateChunks) == 3
+}
+func parseMatchDate(doc *goquery.Document, hasMatchDate bool) time.Time {
+	if hasMatchDate == false {
+		return time.Date(0, 0, 0, 0, 0, 0, 0, time.Local)
+	}
+	rawData := doc.Find("#Content table tbody > tr > td").First().Text()
+	dateChunks := strings.Split(rawData, ",")
+	dateChunk := dateChunks[1]
 	return parseDate(strings.TrimSpace(dateChunk))
 }
 
-func parseMatchDay(doc *goquery.Document) int {
+func parseMatchDay(doc *goquery.Document, hasMatchDate bool) int {
 	rawData := doc.Find("#Content table tbody > tr > td").First().Text()
 	dateChunks := strings.Split(rawData, ",")
-	matchDayString := strings.Split(dateChunks[2], ".")[0]
+	var matchDayString string
+	if hasMatchDate {
+		matchDayString = strings.Split(dateChunks[2], ".")[0]
+	} else {
+		matchDayString = strings.Split(dateChunks[1], ".")[0]
+	}
 	matchDay, err := strconv.Atoi(strings.TrimSpace(matchDayString))
 	helper.HandleFatalError("parsing matchday failed:", err)
 	return matchDay
@@ -60,9 +76,13 @@ func parseMatchDay(doc *goquery.Document) int {
 
 func parseTeams(doc *goquery.Document) (homeTeam string, guestTeam string) {
 	teams := doc.Find("table.contentpaneopen").Eq(1).Find("tbody > tr > td > table > tbody h2")
-	homeTeam = teams.First().Text()
-	guestTeam = teams.Last().Text()
+	homeTeam = removeTeamDescriptons(teams.First().Text())
+	guestTeam = removeTeamDescriptons(teams.Last().Text())
 	return
+}
+
+func removeTeamDescriptons(team string) string {
+	return strings.TrimSpace(strings.Split(team, "(")[0])
 }
 
 func parseGamePosition(selection *goquery.Selection) (position int) {
@@ -88,15 +108,24 @@ func isDouble(selection *goquery.Selection) bool {
 }
 
 func addPlayers(game *Game, selection *goquery.Selection) {
+	players := selection.Find("td a")
 	if game.Double {
-		game.HomePlayer1 = selection.Find("td a").Eq(0).Text()
-		game.HomePlayer2 = selection.Find("td a").Eq(1).Text()
-		game.GuestPlayer1 = selection.Find("td a").Eq(2).Text()
-		game.GuestPlayer2 = selection.Find("td a").Eq(3).Text()
+		game.HomePlayer1 = parseName(players, 0)
+		game.HomePlayer2 = parseName(players, 1)
+		game.GuestPlayer1 = parseName(players, 2)
+		game.GuestPlayer2 = parseName(players, 3)
 	} else {
-		game.HomePlayer1 = selection.Find("td a").Eq(0).Text()
-		game.GuestPlayer1 = selection.Find("td a").Eq(1).Text()
+		game.HomePlayer1 = parseName(players, 0)
+		game.GuestPlayer1 = parseName(players, 1)
+
 	}
+}
+
+func parseName(players *goquery.Selection, position int) string {
+	if players.Length()-1 >= position {
+		return players.Eq(position).Text()
+	}
+	return ""
 }
 
 func hasImages(rawGames *goquery.Selection) bool {
