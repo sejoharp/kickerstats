@@ -14,9 +14,8 @@ func ParseGames(doc *goquery.Document) (games []*Game) {
 	if isValidGameList(rawGames) {
 		hasImages := hasImages(rawGames)
 		homeTeam, guestTeam := parseTeams(doc)
-		var matchDate time.Time
 		hasMatchDate := hasMatchDate(doc)
-		matchDate = parseMatchDate(doc, hasMatchDate)
+		matchDate := parseMatchDate(doc, hasMatchDate)
 		matchDay := parseMatchDay(doc, hasMatchDate)
 		rawGames.Each(func(i int, selection *goquery.Selection) {
 			game := &Game{}

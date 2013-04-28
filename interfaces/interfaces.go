@@ -1,7 +1,7 @@
 package interfaces
 
 import (
-	"bitbucket.org/joscha/hpfeed/helper"
+	"bitbucket.org/joscha/kickerstats/helper"
 	"bytes"
 	"exp/html"
 	"github.com/puerkitobio/goquery"
