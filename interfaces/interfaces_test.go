@@ -5,8 +5,12 @@
 package interfaces
 
 import (
+	"exp/html"
+	"fmt"
 	"github.com/ghthor/gospec"
-//	"testing"
+	"github.com/puerkitobio/goquery"
+	"os"
+	"testing"
 )
 
 // You will need to list every spec in a TestXxx method like this,
@@ -20,7 +24,24 @@ func TestAllInterfacesSpecs(t *testing.T) {
 
 	// List all specs here
 	r.AddSpec(MatchParserSpec)
+	r.AddSpec(GameParserSpec)
+	r.AddSpec(CSVExportSpec)
+	//r.AddSpec(LigatoolReaderSpec)
 
 	// Run GoSpec and report any errors to gotest's `testing.T` instance
 	gospec.MainGoTest(r, t)
+}
+
+func loadDoc(page string) *goquery.Document {
+	if f, e := os.Open(fmt.Sprintf("../testdata/%s", page)); e != nil {
+		panic(e.Error())
+	} else {
+		defer f.Close()
+		if node, e := html.Parse(f); e != nil {
+			panic(e.Error())
+		} else {
+			return goquery.NewDocumentFromNode(node)
+		}
+	}
+	return nil
 }

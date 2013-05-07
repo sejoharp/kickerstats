@@ -1,234 +1,155 @@
 package interfaces
 
 import (
-	"exp/html"
-	"fmt"
-	"github.com/puerkitobio/goquery"
-	"os"
-	"testing"
+	"github.com/ghthor/gospec"
+	. "github.com/ghthor/gospec"
 	"time"
 )
 
-func loadDoc(page string) *goquery.Document {
-	if f, e := os.Open(fmt.Sprintf("../testdata/%s", page)); e != nil {
-		panic(e.Error())
-	} else {
-		defer f.Close()
-		if node, e := html.Parse(f); e != nil {
-			panic(e.Error())
-		} else {
-			return goquery.NewDocumentFromNode(node)
-		}
-	}
-	return nil
-}
+func GameParserSpec(c gospec.Context) {
+	c.Specify("Parsing match returns correct match date.", func() {
+		doc := loadDoc("begegnung.html")
 
-func TestParseMatchDate(t *testing.T) {
-	doc := loadDoc("begegnung.html")
-	expectedMatchDate := time.Date(2013, 2, 27, 20, 0, 0, 0, time.Local)
+		resultDate := parseMatchDate(doc, true)
 
-	resultDate := parseMatchDate(doc, true)
+		c.Expect(time.Date(2013, 2, 27, 20, 0, 0, 0, time.Local), Equals, resultDate)
+	})
+	c.Specify("Parsing match returns correct match day.", func() {
+		doc := loadDoc("begegnung.html")
 
-	if expectedMatchDate != resultDate {
-		t.Errorf("Parsing match date failed. expected: %s, result: %s", expectedMatchDate, resultDate)
-	}
-}
+		resultDay := parseMatchDay(doc, true)
 
-func TestParseMatchDay(t *testing.T) {
-	doc := loadDoc("begegnung.html")
+		c.Expect(resultDay, Equals, 1)
+	})
+	c.Specify("Parsing opponents returns both teams.", func() {
+		doc := loadDoc("begegnung.html")
 
-	resultDay := parseMatchDay(doc, true)
+		homeTeam, guestTeam := parseTeams(doc)
+		c.Expect(homeTeam, Equals, "Tingeltangel FC St. Pauli")
+		c.Expect(guestTeam, Equals, "Hamburg Privateers 08")
+	})
+	c.Specify("Parsing games returns a full game.", func() {
+		doc := loadDoc("begegnung.html")
 
-	if resultDay != 1 {
-		t.Errorf("Parsing match day failed. expected: %s, result: %s", 1, resultDay)
-	}
-}
+		games := ParseGames(doc)
 
-func TestParseTeams(t *testing.T) {
-	expectedHomeTeam := "Tingeltangel FC St. Pauli"
-	expectedGuestTeam := "Hamburg Privateers 08"
-	doc := loadDoc("begegnung.html")
+		c.Expect(games[0].HomeTeam, Equals, "Tingeltangel FC St. Pauli")
+		c.Expect(games[0].GuestTeam, Equals, "Hamburg Privateers 08")
+		c.Expect(games[0].HomePlayer1, Equals, "Technau, Jerome")
+		c.Expect(games[0].GuestPlayer1, Equals, "Hojas, René")
+		c.Expect(games[0].HomeScore, Equals, 4)
+		c.Expect(games[0].GuestScore, Equals, 7)
+		c.Expect(games[0].Position, Equals, 1)
+		c.Expect(games[0].MatchDay, Equals, 1)
+		c.Expect(games[0].MatchDate, Equals, time.Date(2013, 2, 27, 20, 0, 0, 0, time.Local))
+		c.Expect(games[0].Double, Equals, false)
+	})
+	c.Specify("Parsing games returns a full double game.", func() {
+		doc := loadDoc("begegnung.html")
 
-	homeTeam, guestTeam := parseTeams(doc)
+		games := ParseGames(doc)
 
-	if homeTeam != expectedHomeTeam {
-		t.Errorf("Parsing home team failed. expected: %s, result: %s", expectedHomeTeam, homeTeam)
-	}
-	if guestTeam != expectedGuestTeam {
-		t.Errorf("Parsing home team failed. expected: %s, result: %s", expectedGuestTeam, guestTeam)
-	}
-}
+		c.Expect(games[2].HomeTeam, Equals, "Tingeltangel FC St. Pauli")
+		c.Expect(games[2].GuestTeam, Equals, "Hamburg Privateers 08")
+		c.Expect(games[2].HomePlayer1, Equals, "Fischer, Harro")
+		c.Expect(games[2].HomePlayer2, Equals, "Kränz, Ludwig")
+		c.Expect(games[2].GuestPlayer1, Equals, "Zierott, Ulli")
+		c.Expect(games[2].GuestPlayer2, Equals, "Hojas, René")
+		c.Expect(games[2].HomeScore, Equals, 4)
+		c.Expect(games[2].GuestScore, Equals, 5)
+		c.Expect(games[2].Position, Equals, 3)
+		c.Expect(games[2].MatchDay, Equals, 1)
+		c.Expect(games[2].MatchDate, Equals, time.Date(2013, 2, 27, 20, 0, 0, 0, time.Local))
+		c.Expect(games[2].Double, Equals, true)
+	})
+	c.Specify("Parser returns all games.", func() {
+		doc := loadDoc("begegnung.html")
 
-func TestParseFirstGame(t *testing.T) {
-	expectedGame := &Game{
-		HomeTeam:     "Tingeltangel FC St. Pauli",
-		GuestTeam:    "Hamburg Privateers 08",
-		HomePlayer1:  "Technau, Jerome",
-		GuestPlayer1: "Hojas, René",
-		HomeScore:    4,
-		GuestScore:   7,
-		Position:     1,
-		MatchDay:     1,
-		MatchDate:    time.Date(2013, 2, 27, 20, 0, 0, 0, time.Local),
-		Double:       false}
-	doc := loadDoc("begegnung.html")
+		games := ParseGames(doc)
 
-	games := ParseGames(doc)
+		c.Expect(len(games), Equals, 16)
+	})
+	c.Specify("Parsing games with player images returns all games.", func() {
+		doc := loadDoc("begegnung_bild.html")
 
-	if expectedGame.Equal(games[0]) == false {
-		t.Errorf("Parsing first game failed. expected: ", expectedGame)
-		t.Errorf("Parsing first game failed.   result: ", games[0])
-	}
-}
+		games := ParseGames(doc)
 
-func TestParseFirstDoubleGame(t *testing.T) {
-	expectedDoubleGame := &Game{
-		HomeTeam:     "Tingeltangel FC St. Pauli",
-		GuestTeam:    "Hamburg Privateers 08",
-		HomePlayer1:  "Fischer, Harro",
-		HomePlayer2:  "Kränz, Ludwig",
-		GuestPlayer1: "Zierott, Ulli",
-		GuestPlayer2: "Hojas, René",
-		HomeScore:    4,
-		GuestScore:   5,
-		Position:     3,
-		MatchDay:     1,
-		MatchDate:    time.Date(2013, 2, 27, 20, 0, 0, 0, time.Local),
-		Double:       true}
-	doc := loadDoc("begegnung.html")
+		c.Expect(len(games), Equals, 16)
+	})
 
-	games := ParseGames(doc)
+	c.Specify("Parsing games with player images returns a full game.", func() {
+		doc := loadDoc("begegnung_bild.html")
 
-	if expectedDoubleGame.Equal(games[2]) == false {
-		t.Errorf("Parsing first double game failed. expected: ", expectedDoubleGame)
-		t.Errorf("Parsing first double game failed.   result: ", games[2])
-	}
-}
+		games := ParseGames(doc)
 
-func TestParseGameAmount(t *testing.T) {
-	doc := loadDoc("begegnung.html")
-	expectedGameAmount := 16
+		c.Expect(games[0].HomeTeam, Equals, "Cim Bom Bom")
+		c.Expect(games[0].GuestTeam, Equals, "Die Maschinerie")
+		c.Expect(games[0].HomePlayer1, Equals, "Arslan, Mehmet Emin")
+		c.Expect(games[0].GuestPlayer1, Equals, "Bai, Minyoung")
+		c.Expect(games[0].HomeScore, Equals, 4)
+		c.Expect(games[0].GuestScore, Equals, 7)
+		c.Expect(games[0].Position, Equals, 1)
+		c.Expect(games[0].MatchDay, Equals, 1)
+		c.Expect(games[0].MatchDate, Equals, time.Date(2013, 2, 28, 20, 0, 0, 0, time.Local))
+		c.Expect(games[0].Double, Equals, false)
+	})
+	c.Specify("Parsing games with player images returns a full double game.", func() {
+		doc := loadDoc("begegnung_bild.html")
 
-	games := ParseGames(doc)
-	gameAmount := len(games)
+		games := ParseGames(doc)
 
-	if expectedGameAmount != gameAmount {
-		t.Errorf("Parsing games failed. expected: %d, result: %d", expectedGameAmount, gameAmount)
-	}
-}
+		c.Expect(games[2].HomeTeam, Equals, "Cim Bom Bom")
+		c.Expect(games[2].GuestTeam, Equals, "Die Maschinerie")
+		c.Expect(games[2].HomePlayer1, Equals, "Günther, Richard")
+		c.Expect(games[2].HomePlayer2, Equals, "Eggerstedt, Kai")
+		c.Expect(games[2].GuestPlayer1, Equals, "Bai, Minyoung")
+		c.Expect(games[2].GuestPlayer2, Equals, "Strecker, Knuth")
+		c.Expect(games[2].HomeScore, Equals, 5)
+		c.Expect(games[2].GuestScore, Equals, 4)
+		c.Expect(games[2].Position, Equals, 3)
+		c.Expect(games[2].MatchDay, Equals, 1)
+		c.Expect(games[2].MatchDate, Equals, time.Date(2013, 2, 28, 20, 0, 0, 0, time.Local))
+		c.Expect(games[2].Double, Equals, true)
+	})
+	c.Specify("Parsing relegation does not find games", func() {
+		doc := loadDoc("relegation.html")
 
-func TestParseGameAmountWithImages(t *testing.T) {
-	doc := loadDoc("begegnung_bild.html")
-	expectedGameAmount := 16
+		games := ParseGames(doc)
 
-	games := ParseGames(doc)
-	gameAmount := len(games)
+		c.Expect(len(games), Equals, 0)
+	})
+	c.Specify("Parsing games with empty player names return all available data.", func() {
+		doc := loadDoc("begegnung_no_names.html")
 
-	if expectedGameAmount != gameAmount {
-		t.Errorf("Parsing games failed. expected: %d, result: %d", expectedGameAmount, gameAmount)
-	}
-}
+		games := ParseGames(doc)
 
-func TestParseFirstGameWithImages(t *testing.T) {
-	expectedGame := &Game{
-		HomeTeam:     "Cim Bom Bom",
-		GuestTeam:    "Die Maschinerie",
-		HomePlayer1:  "Arslan, Mehmet Emin",
-		GuestPlayer1: "Bai, Minyoung",
-		HomeScore:    4,
-		GuestScore:   7,
-		Position:     1,
-		MatchDay:     1,
-		MatchDate:    time.Date(2013, 2, 28, 20, 0, 0, 0, time.Local),
-		Double:       false}
-	doc := loadDoc("begegnung_bild.html")
+		c.Expect(games[13].HomeTeam, Equals, "Die Hinkelsteinchen")
+		c.Expect(games[13].GuestTeam, Equals, "Kurbelkraft Bergedorf")
+		c.Expect(games[13].HomePlayer1, Equals, "")
+		c.Expect(games[13].GuestPlayer1, Equals, "")
+		c.Expect(games[13].HomeScore, Equals, 7)
+		c.Expect(games[13].GuestScore, Equals, 0)
+		c.Expect(games[13].Position, Equals, 14)
+		c.Expect(games[13].MatchDay, Equals, 1)
+		c.Expect(games[13].MatchDate, Equals, time.Date(2013, 2, 28, 20, 0, 0, 0, time.Local))
+		c.Expect(games[13].Double, Equals, false)
+	})
+	c.Specify("Parsing games without dates returns match day", func() {
+		doc := loadDoc("begegnung_no_date.html")
 
-	games := ParseGames(doc)
+		resultDay := parseMatchDay(doc, false)
 
-	if expectedGame.Equal(games[0]) == false {
-		t.Errorf("Parsing first game failed. expected: ", expectedGame)
-		t.Errorf("Parsing first game failed.   result: ", games[0])
-	}
-}
+		c.Expect(resultDay, Equals, 5)
+	})
+	c.Specify("Parsing a match without a date returns a default date", func() {
+		doc := loadDoc("begegnung_no_date.html")
 
-func TestParseFirstDoubleGameWithImages(t *testing.T) {
-	expectedDoubleGame := &Game{
-		HomeTeam:     "Cim Bom Bom",
-		GuestTeam:    "Die Maschinerie",
-		HomePlayer1:  "Günther, Richard",
-		HomePlayer2:  "Eggerstedt, Kai",
-		GuestPlayer1: "Bai, Minyoung",
-		GuestPlayer2: "Strecker, Knuth",
-		HomeScore:    5,
-		GuestScore:   4,
-		Position:     3,
-		MatchDay:     1,
-		MatchDate:    time.Date(2013, 2, 28, 20, 0, 0, 0, time.Local),
-		Double:       true}
-	doc := loadDoc("begegnung_bild.html")
+		matchDate := hasMatchDate(doc)
 
-	games := ParseGames(doc)
+		c.Expect(matchDate, IsFalse)
 
-	if expectedDoubleGame.Equal(games[2]) == false {
-		t.Errorf("Parsing first double game failed. expected: ", expectedDoubleGame)
-		t.Errorf("Parsing first double game failed.   result: ", games[2])
-	}
-}
+		games := ParseGames(doc)
 
-func TestParseGameAmountRelegation(t *testing.T) {
-	doc := loadDoc("relegation.html")
-	expectedGameAmount := 0
-
-	games := ParseGames(doc)
-	gameAmount := len(games)
-
-	if expectedGameAmount != gameAmount {
-		t.Errorf("Parsing games failed. expected: %d, result: %d", expectedGameAmount, gameAmount)
-	}
-}
-
-func TestParseEmptyNames(t *testing.T) {
-	expectedGame := &Game{
-		HomeTeam:     "Die Hinkelsteinchen",
-		GuestTeam:    "Kurbelkraft Bergedorf",
-		HomePlayer1:  "",
-		GuestPlayer1: "",
-		HomeScore:    7,
-		GuestScore:   0,
-		Position:     14,
-		MatchDay:     1,
-		MatchDate:    time.Date(2013, 2, 28, 20, 0, 0, 0, time.Local),
-		Double:       false}
-	doc := loadDoc("begegnung_no_names.html")
-
-	games := ParseGames(doc)
-
-	if expectedGame.Equal(games[13]) == false {
-		t.Errorf("Parsing first game failed. expected: ", expectedGame)
-		t.Errorf("Parsing first game failed.   result: ", games[0])
-	}
-}
-
-func TestParseMatchDayNoDate(t *testing.T) {
-	doc := loadDoc("begegnung_no_date.html")
-
-	resultDay := parseMatchDay(doc, false)
-
-	if resultDay != 5 {
-		t.Errorf("Parsing match day failed. expected: %s, result: %s", 5, resultDay)
-	}
-}
-
-func TestParseMatchDateWithNoDate(t *testing.T) {
-	doc := loadDoc("begegnung_no_date.html")
-
-	matchDate := hasMatchDate(doc)
-	if matchDate {
-		t.Errorf("Parsing match date failed. expected: %t, result: %t", false, matchDate)
-	}
-	games := ParseGames(doc)
-
-	if games[0].MatchDate.String() != time.Date(0, 0, 0, 0, 0, 0, 0, time.Local).String() {
-		t.Errorf("Parsing first game failed. result: ", games[0].MatchDate.String())
-	}
+		c.Expect(games[0].MatchDate, Equals, time.Date(0, 0, 0, 0, 0, 0, 0, time.Local))
+	})
 }

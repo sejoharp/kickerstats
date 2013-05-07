@@ -4,13 +4,11 @@ import (
 	"github.com/ghthor/gospec"
 	. "github.com/ghthor/gospec"
 	"strconv"
-	"testing"
 )
 
 func MatchParserSpec(c gospec.Context) {
-	c.Specify("There are 14 match links.", func() {
+	c.Specify("Parser returns all match links.", func() {
 		doc := loadDoc("begegnungen.html")
-		expectedMatchLinkCount := 14
 
 		matchLinks := FindMatchLinks(doc)
 
@@ -25,16 +23,15 @@ func MatchParserSpec(c gospec.Context) {
 		c.Expect(matchLinks[0], Equals, "http://www.kickern-hamburg.de/liga-tool/mannschaftswettbewerbe?task=begegnung_spielplan&veranstaltungid=64&id=3815")
 	})
 
-	c.Specify("There are five ligalinks.", func() {
+	c.Specify("Parser returns all ligalinks.", func() {
 		doc := loadDoc("uebersicht.html")
 
 		links := FindLigaLinks(doc)
-		linkCount := len(links)
 
 		c.Expect(len(links), Equals, 5)
 	})
 
-	c.Specify("There are five seasons.", func() {
+	c.Specify("Parser returns all seasons.", func() {
 		doc := loadDoc("uebersicht.html")
 
 		seasonIds := FindSeasons(doc)
@@ -42,7 +39,7 @@ func MatchParserSpec(c gospec.Context) {
 		c.Expect(len(seasonIds), Equals, 5)
 	})
 
-	c.Specify("The first seasonID is seven.", func() {
+	c.Specify("The first seasonID is filled.", func() {
 		doc := loadDoc("uebersicht.html")
 
 		seasonIds := FindSeasons(doc)
