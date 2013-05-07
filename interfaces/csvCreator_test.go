@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/csv"
 	. "github.com/ghthor/gospec"
-	"github.com/ghthor/gospec"
 	"os"
 	"strconv"
 	"time"
@@ -13,7 +12,7 @@ import (
 
 const FILENAME = "games.csv"
 
-func CSVExportSpec(c gospec.Context) {
+func CSVExportSpec(c Context) {
 	c.Specify("Persists two games to csv.", func() {
 
 		expectedGame := &Game{

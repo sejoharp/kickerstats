@@ -2,11 +2,10 @@ package interfaces
 
 import (
 	"fmt"
-	"github.com/ghthor/gospec"
 	. "github.com/ghthor/gospec"
 )
 
-func LigatoolReaderSpec(c gospec.Context) {
+func LigatoolReaderSpec(c Context) {
 	c.Specify("Download the 4th season returns full html.", func() {
 		rawdata := DownloadSeason("4")
 		doc := GenerateDocument(rawdata)

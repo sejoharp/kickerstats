@@ -1,12 +1,11 @@
 package interfaces
 
 import (
-	"github.com/ghthor/gospec"
 	. "github.com/ghthor/gospec"
 	"time"
 )
 
-func GameParserSpec(c gospec.Context) {
+func GameParserSpec(c Context) {
 	c.Specify("Parsing match returns correct match date.", func() {
 		doc := loadDoc("begegnung.html")
 

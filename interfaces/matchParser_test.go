@@ -1,12 +1,11 @@
 package interfaces
 
 import (
-	"github.com/ghthor/gospec"
 	. "github.com/ghthor/gospec"
 	"strconv"
 )
 
-func MatchParserSpec(c gospec.Context) {
+func MatchParserSpec(c Context) {
 	c.Specify("Parser returns all match links.", func() {
 		doc := loadDoc("begegnungen.html")
 
