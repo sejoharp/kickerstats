@@ -10,6 +10,7 @@ import (
 )
 
 func StoreGamesInCSVFile(fileName string, games []*Game) {
+	os.Remove(fileName)
 	file, err := os.Create(fileName)
 	helper.HandleFatalError("error creating csv file: ", err)
 	fileWriter := bufio.NewWriter(file)
