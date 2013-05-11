@@ -1,22 +1,18 @@
 package interfaces
 
 import (
-	"fmt"
 	. "github.com/ghthor/gospec"
 )
 
 func LigatoolReaderSpec(c Context) {
-	c.Specify("Download the 4th season returns full html.", func() {
+	c.Specify("Downloads full html from the 4th season.", func() {
 		rawdata := DownloadSeason("4")
 		doc := GenerateDocument(rawdata)
-		fmt.Println(doc.Html())
-
 		c.Expect(doc.Length(), Equals, 1)
 	})
-	c.Specify("Download html data returns full html.", func() {
+	c.Specify("Download html data.", func() {
 		rawdata := DownloadHTMLData("http://www.kickern-hamburg.de/liga-tool/mannschaftswettbewerbe?task=begegnung_spielplan&veranstaltungid=8&id=2")
 		doc := GenerateDocument(rawdata)
-		fmt.Println(doc.Html())
 		c.Expect(doc.Length(), Equals, 1)
 	})
 }

@@ -1,7 +1,11 @@
 package interfaces
 
 import (
+	"exp/html"
+	"fmt"
 	. "github.com/ghthor/gospec"
+	"github.com/puerkitobio/goquery"
+	"os"
 	"time"
 )
 
@@ -151,4 +155,18 @@ func GameParserSpec(c Context) {
 
 		c.Expect(games[0].MatchDate, Equals, time.Date(0, 0, 0, 0, 0, 0, 0, time.Local))
 	})
+}
+
+func loadDoc(page string) *goquery.Document {
+	if f, e := os.Open(fmt.Sprintf("testdata/%s", page)); e != nil {
+		panic(e.Error())
+	} else {
+		defer f.Close()
+		if node, e := html.Parse(f); e != nil {
+			panic(e.Error())
+		} else {
+			return goquery.NewDocumentFromNode(node)
+		}
+	}
+	return nil
 }
