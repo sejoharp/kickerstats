@@ -18,8 +18,15 @@ func StoreGamesInCSVFile(fileName string, games []*Game) {
 	csvWriter := csv.NewWriter(fileWriter)
 	csvWriter.Comma = delimiter
 	for _, game := range games {
+		if game.HomePlayer2 == "" {
+			game.HomePlayer2 = "XXXX"
+		}
+		if game.GuestPlayer2 == "" {
+			game.GuestPlayer2 = "XXXX"
+
+		}
 		record := []string{
-			game.MatchDate.String(),
+			game.MatchDate.Format("2006-01-02"),
 			strconv.Itoa(game.MatchDay),
 			strconv.Itoa(game.Position),
 			game.HomeTeam,
