@@ -3,10 +3,10 @@ package interfaces
 import (
 	"bitbucket.org/joscha/kickerstats/helper"
 	"bytes"
-	"exp/html"
+	"code.google.com/p/go.net/html"
+	"fmt"
 	"github.com/puerkitobio/goquery"
 	"time"
-	"fmt"
 )
 
 const RAW_DATE_FORMAT = "02.01.2006 15:04"

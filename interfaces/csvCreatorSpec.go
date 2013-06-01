@@ -45,11 +45,11 @@ func CSVExportSpec(c Context) {
 		c.Expect(games[0][2], Equals, strconv.Itoa(expectedGame.Position))
 		c.Expect(games[0][3], Equals, expectedGame.HomeTeam)
 		c.Expect(games[0][4], Equals, expectedGame.HomePlayer1)
-		c.Expect(games[0][5], Equals, expectedGame.HomePlayer2)
+		c.Expect(games[0][5], Equals, "XXXX")
 		c.Expect(games[0][6], Equals, strconv.Itoa(expectedGame.HomeScore))
 		c.Expect(games[0][7], Equals, strconv.Itoa(expectedGame.GuestScore))
 		c.Expect(games[0][8], Equals, expectedGame.GuestPlayer1)
-		c.Expect(games[0][9], Equals, expectedGame.GuestPlayer2)
+		c.Expect(games[0][9], Equals, "XXXX")
 		c.Expect(games[0][10], Equals, expectedGame.GuestTeam)
 
 		if removeFile {

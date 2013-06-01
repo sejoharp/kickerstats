@@ -12,7 +12,8 @@ func FindMatchLinks(doc *goquery.Document) (matchLinks []string) {
 	rawMatchLinks = rawMatchLinks.Find(".sectiontableentry1, .sectiontableentry2")
 	rawMatchLinks.Each(func(i int, selection *goquery.Selection) {
 		alreadyPlayed := selection.Find("a").Length() == 2
-		scoreConfirmed := selection.Find("td:nth-child(5) small").Text() != "unbestätigt"
+		scoreText := selection.Find("td:nth-child(5) small").Text()
+		scoreConfirmed := scoreText != "unbestätigt" && scoreText != "live"
 		if alreadyPlayed && scoreConfirmed {
 			link, _ := selection.Find("a[href]").Attr("href")
 			matchLinks = append(matchLinks, "http://www.kickern-hamburg.de"+strings.TrimSpace(link))

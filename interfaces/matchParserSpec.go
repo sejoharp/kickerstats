@@ -14,6 +14,14 @@ func MatchParserSpec(c Context) {
 		c.Expect(len(matchLinks), Equals, 14)
 	})
 
+	c.Specify("Parser only returns acknowledged matches.", func() {
+		doc := loadDoc("begegnungen_live.html")
+
+		matchLinks := FindMatchLinks(doc)
+
+		c.Expect(len(matchLinks), Equals, 24)
+	})
+	
 	c.Specify("The first match link is filled.", func() {
 		doc := loadDoc("begegnungen.html")
 
